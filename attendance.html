@@ -1,0 +1,209 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Attendance</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: #eef2ff;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #1e1e50;
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    h2::before {
+      content: "📝";
+      font-size: 34px;
+    }
+
+    .summary-card {
+      background: rgba(252, 250, 250, 0.888);
+      padding: 25px;
+      border-radius: 14px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 25px;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 15px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th {
+      background: #4f46e5;
+      color: rgb(252, 252, 252);
+      padding: 12px;
+      font-size: 15px;
+      text-align: center;
+    }
+
+    td {
+      border-bottom: 1px solid #f5f0f0;
+      padding: 12px;
+      text-align: center;
+      font-size: 15px;
+      color: #333;
+    }
+
+    tr:nth-child(even) {
+      background: #f2f2f7;
+    }
+
+    tr:hover {
+      background: #e8e8ff;
+    }
+
+    .back-link {
+      margin-top: 20px;
+      display: inline-block;
+      color: #4f46e5;
+      font-size: 16px;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <h2>Attendance</h2>
+
+  <div class="summary-card">
+    <p><strong>Total Days:</strong> <span id="totalDays">-</span></p>
+    <p><strong>Present Days:</strong> <span id="presentDays">-</span></p>
+  </div>
+
+  <div class="summary-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Total Classes</th>
+          <th>Attended</th>
+          <th>Attendance %</th>
+        </tr>
+      </thead>
+
+      <tbody id="attendanceTable">
+        <tr id="loadingRow">
+          <td colspan="4">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <a class="back-link" href="dashboard.html">← Back to Dashboard</a>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Login required");
+    window.location.href = "login.html";
+    return;
+  }
+
+  // helper to get first existing key from an object
+  function getFirstKey(obj, keys) {
+    for (const k of keys) {
+      if (obj == null) continue;
+      // treat 0 as valid
+      if (typeof obj[k] !== "undefined" && obj[k] !== null) return obj[k];
+    }
+    return undefined;
+  }
+
+  try {
+    const res = await fetch("/api/attendance", {
+      headers: { Authorization: "Bearer " + token }
+    });
+
+    if (!res.ok) {
+      throw new Error("API returned status " + res.status);
+    }
+
+    const data = await res.json();
+
+    // Fill totals (safe fallback)
+    document.getElementById("totalDays").innerText = (typeof data.totalDays !== "undefined") ? data.totalDays : "-";
+    document.getElementById("presentDays").innerText = (typeof data.presentDays !== "undefined") ? data.presentDays : "-";
+
+    const table = document.getElementById("attendanceTable");
+    // Remove loading row if present
+    const loading = document.getElementById("loadingRow");
+    if (loading) loading.remove();
+
+    // If no subjects
+    if (!data.subjects || data.subjects.length === 0) {
+      table.innerHTML = "<tr><td colspan='4'>No subjects found</td></tr>";
+      return;
+    }
+
+    // For each subject, try multiple possible field names for totals & attended
+    data.subjects.forEach(sub => {
+      const total = getFirstKey(sub, ["totalclasses", "totalClasses", "total_classes", "total"]);
+      const attended = getFirstKey(sub, ["attendedclasses", "attendedClasses", "attended_classes", "attended"]);
+
+      const totalDisplay = (typeof total !== "undefined" && total !== null) ? total : "-";
+      const attendedDisplay = (typeof attended !== "undefined" && attended !== null) ? attended : "-";
+
+      let percent = "-";
+      const totalNum = Number(total);
+      const attendedNum = Number(attended);
+      if (!isNaN(totalNum) && totalNum > 0 && !isNaN(attendedNum)) {
+        percent = ((attendedNum / totalNum) * 100).toFixed(1) + "%";
+      }
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${sub.subject || "-"}</td>
+        <td>${totalDisplay}</td>
+        <td>${attendedDisplay}</td>
+        <td>${percent}</td>
+      `;
+      table.appendChild(row);
+    });
+
+  } catch (err) {
+    console.error("Attendance load error:", err);
+    const loadingRow = document.getElementById("loadingRow");
+    if (loadingRow) {
+      loadingRow.innerHTML = "<td colspan='4'>Error loading attendance</td>";
+    } else {
+      document.getElementById("attendanceTable").innerHTML = "<tr><td colspan='4'>Error loading attendance</td></tr>";
+    }
+  }
+});
+</script>
+
+</body>
+</html>
