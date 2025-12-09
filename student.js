@@ -1,19 +1,11 @@
-const Student = require('../models/student');
+const mongoose = require("mongoose");
 
-module.exports = async (req, res, next) => {
-  try {
-    const studentId = req.params.id || req.user.id; // from JWT or request param
-    const student = await Student.findById(studentId);
+const StudentSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  rollNumber: String,
+  department: String,
+  year: String,
+  section: String
+});
 
-    if (!student) {
-      return res.status(404).json({ message: 'Student not found!' });
-    }
-
-    // Attach student data for next middleware
-    req.student = student;
-    next();
-  } catch (error) {
-    console.error('Student middleware error:', error);
-    res.status(500).json({ message: 'Server error validating student.' });
-  }
-};
+module.exports = mongoose.model("Student", StudentSchema);
