@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      background: #f3f7ff;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+    }
+
+    .wrapper {
+      width: 900px;
+      padding: 20px;
+    }
+
+    .header {
+      background: #4b7bec;
+      padding: 18px 25px;
+      border-radius: 10px;
+      color: white;
+      display: flex;
+      justify-content: flex-start;   /* LEFT ONLY */
+      align-items: center;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .container {
+      display: flex;
+      gap: 25px;
+      justify-content: space-between;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 48%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .card h3 {
+      margin-bottom: 15px;
+      color: #2d3436;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    .btn-primary {
+      padding: 10px 18px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: white;
+      background: #3867d6;
+      display: block;
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 15px;
+    }
+
+    .btn-primary:hover {
+      background: #274bb8;
+    }
+
+    /* Large Logout Button (Now at bottom) */
+    .logout-container {
+      text-align: center;
+      margin-top: 35px;
+    }
+
+    .btn-logout {
+      background: #ff4757;
+      border: none;
+      padding: 12px 40px;
+      border-radius: 8px;
+      font-size: 18px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-logout:hover {
+      background: #d63031;
+    }
+  </style>
+
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header class="header">
+    <h2>Welcome, <span id="studentName"></span> 👋</h2>
+  </header>
+
+  <div class="container">
+
+    <!-- Profile Card -->
+    <div class="card">
+      <h3>Student Profile</h3>
+      <p><strong>Name:</strong> <span id="nameField"></span></p>
+      <p><strong>Username:</strong> <span id="userField"></span></p>
+    </div>
+
+    <!-- Navigation Card -->
+    <div class="card">
+      <h3>Student Options</h3>
+
+      <a class="btn-primary" href="attendance.html">📘 View Attendance</a>
+      <a class="btn-primary" href="marks.html">🎯 View Marks</a>
+      <a class="btn-primary" href="performance.html">📊 View Performance</a>
+      <a class="btn-primary" href="graph.html">📈view graph</a>
+    </div>
+
+  </div>
+
+  <!-- LOGOUT BUTTON AT BOTTOM -->
+  <div class="logout-container">
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+
+</div>
+
+
+<script>
+// Load student info
+const fullname = localStorage.getItem("fullname");
+document.getElementById("studentName").innerText = fullname;
+document.getElementById("nameField").innerText = fullname;
+
+// Fetch username from backend
+fetch("/api/auth/dashboard", {
+  headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+})
+.then(res => res.json())
+.then(data => {
+  document.getElementById("userField").innerText = data.username;
+})
+.catch(() => alert("Error loading profile"));
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>
