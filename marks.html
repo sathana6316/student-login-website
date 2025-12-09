@@ -1,0 +1,166 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Marks</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: #eef2ff;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #1e1e50;
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    h2::before {
+      content: "📘";
+      font-size: 34px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 14px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 25px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 15px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th {
+      background: #4f46e5;
+      color: white;
+      padding: 12px;
+      font-size: 15px;
+    }
+
+    td {
+      border-bottom: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+      font-size: 15px;
+      color: #333;
+    }
+
+    tr:nth-child(even) {
+      background: #f7f7ff;
+    }
+
+    tr:hover {
+      background: #e8e8ff;
+    }
+
+    a {
+      color: #4b45b4;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <h2>Marks</h2>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Marks Obtained</th>
+          <th>Out of</th>
+        </tr>
+      </thead>
+
+      <tbody id="marksTable">
+        <tr id="loadingRow">
+          <td colspan="3">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><a href="dashboard.html">← Back to Dashboard</a></p>
+
+
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Not logged in!");
+    window.location.href = "login.html";
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/marks", {
+      headers: { Authorization: "Bearer " + token }
+    });
+
+    if (!res.ok) {
+      throw new Error("API error " + res.status);
+    }
+
+    const data = await res.json();
+    console.log("MARKS RECEIVED:", data);
+
+    const table = document.getElementById("marksTable");
+    const loading = document.getElementById("loadingRow");
+    if (loading) loading.remove();
+
+    if (!data || data.length === 0) {
+      table.innerHTML = "<tr><td colspan='3'>No marks found</td></tr>";
+      return;
+    }
+
+    data.forEach(mark => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${mark.subject || "-"}</td>
+        <td>${mark.finalMarks || "-"}</td>
+        <td>100</td>
+      `;
+      table.appendChild(row);
+    });
+
+  } catch (err) {
+    console.error("Marks load error:", err);
+    document.getElementById("marksTable").innerHTML =
+      "<tr><td colspan='3'>Error loading marks</td></tr>";
+  }
+});
+</script>
+
+
+</body>
+</html>
