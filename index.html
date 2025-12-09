@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elite College</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background: #6695ed; 
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: white;
+      flex-direction: column;
+    }
+    h1 {
+      font-size: 80px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    p {
+      margin-top: 8px;
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    .btn {
+      margin-top: 34px;
+      padding: 12px 28px;
+      font-size: 17px;
+      background: white;
+      color: #72a3f2;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn:hover {
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 55px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Elite College</h1>
+  <p>self belief | self respect | self discipline |</p>
+
+  <button class="btn" onclick="location.href='login.html'">
+    Login
+  </button>
+
+</body>
+</html>
