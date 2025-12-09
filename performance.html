@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Performance</title>
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      background-color: #eef2ff;
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 30px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      font-size: 26px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+
+    .btn-secondary {
+      margin-top: 20px;
+      display: inline-block;
+      text-decoration: none;
+      color: #3c3cbc;
+      font-size: 18px;
+    }
+    .btn-secondary:hover{
+      text-decoration: underline; }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2>📊 Performance Overview</h2>
+
+  <div class="card">
+    <canvas id="performanceChart" height="150"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>Marks & Attendance Summary</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Internal 1</th>
+          <th>Internal 2</th>
+          <th>Internal 3</th>
+          <th>Final</th>
+          <th>Attendance %</th>
+        </tr>
+      </thead>
+
+      <tbody id="performanceTable"></tbody>
+    </table>
+  </div>
+
+  <a class="btn-secondary" href="dashboard.html">← Back to dashboard</a>
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", loadPerformance);
+
+async function loadPerformance() {
+  try {
+    const token = localStorage.getItem("token");
+
+    
+    if (!token) {
+      alert("Session expired. Login again.");
+      window.location.href = "login.html";
+      return;
+    }
+
+   
+    const res = await fetch("http://localhost:5000/api/performance", {
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.log("Backend Error:", data);
+      alert("Unable to load performance.");
+      return;
+    }
+
+    
+    let rows = "";
+
+    data.subjects.forEach(sub => {
+      rows += `
+        <tr>
+          <td>${sub.subject}</td>
+          <td>${sub.internal1 ?? "-"}</td>
+          <td>${sub.internal2 ?? "-"}</td>
+          <td>${sub.internal3 ?? "-"}</td>
+          <td>${sub.final ?? "-"}</td>
+          <td>${sub.attendance ?? "-"}</td>
+        </tr>
+      `;
+    });
+
+    document.getElementById("performanceTable").innerHTML = rows;
+
+
+    // ----------------------------
+    // CHART DATA
+    // ----------------------------
+    const subjects = data.subjects.map(s => s.subject);
+    const finalMarks = data.subjects.map(s => s.final ?? 0);
+
+    const ctx = document.getElementById("performanceChart").getContext("2d");
+
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: subjects,
+        datasets: [{
+          label: "Final Marks",
+          data: finalMarks,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, max: 100 }
+        }
+      }
+    });
+
+  } catch (err) {
+    console.error("Frontend Error:", err);
+  }
+}
+</script>
+
+</body>
+</html>
