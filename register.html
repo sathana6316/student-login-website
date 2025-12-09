@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Student Registration</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="center">
+
+<div class="card login-card">
+  <h2 class="title">Create Account</h2>
+
+  <form id="registerForm">
+    <label>Full Name</label>
+    <input id="fullname" required>
+
+    <label>Username</label>
+    <input id="username" required>
+
+    <label>Password</label>
+    <input id="password" type="password" required>
+
+    <button class="btn-primary" type="submit">Register</button>
+  </form>
+
+  <p class="text-sm">
+    Already have an account? <a href="login.html">Login</a>
+  </p>
+</div>
+
+<script>
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const fullname = document.getElementById("fullname").value.trim();
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+
+  const res = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fullname, username, password })
+  });
+
+  const data = await res.json();
+  alert(data.message || "Registered");
+
+  if (res.ok) window.location.href = "login.html";
+});
+</script>
+
+</body>
+</html>
